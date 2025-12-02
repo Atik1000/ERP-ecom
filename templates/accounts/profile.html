@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | SmartERP{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-3">My Profile</h1>
+<div class="card">
+    <div class="card-body">
+        <p><strong>Username:</strong> {{ request.user.username }}</p>
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+        <p><strong>Role:</strong> {{ request.user.get_role_display }}</p>
+        <p><strong>Default Branch:</strong> {{ request.user.default_branch }}</p>
+    </div>
+</div>
+{% endblock %}
+
+

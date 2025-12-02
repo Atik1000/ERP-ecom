@@ -1,0 +1,51 @@
+{% load static %}
+<div id="sidebar-wrapper" class="border-end bg-white" style="min-width: 240px;">
+    <div class="sidebar-heading px-3 py-2 border-bottom">
+        <strong>SmartERP</strong>
+    </div>
+    <div class="list-group list-group-flush">
+        <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action">
+            Dashboard
+        </a>
+
+        {# Admin & Managers: Inventory #}
+        {% if request.user.is_superuser or request.user.role in ('admin', 'warehouse_manager', 'branch_manager') %}
+            <a href="{% url 'inventory:dashboard' %}" class="list-group-item list-group-item-action">
+                Inventory
+            </a>
+        {% endif %}
+
+        {# POS: Cashier + Branch Manager + Admin #}
+        {% if request.user.is_superuser or request.user.role in ('admin', 'branch_manager', 'cashier') %}
+            <a href="#" class="list-group-item list-group-item-action">
+                POS
+            </a>
+        {% endif %}
+
+        {# E‑Commerce: Admin only for back-office; customers see separate site #}
+        {% if request.user.is_superuser or request.user.role == 'admin' %}
+            <a href="#" class="list-group-item list-group-item-action">
+                E‑Commerce
+            </a>
+        {% endif %}
+
+        {# Finance / Reports: Admin & Managers #}
+        {% if request.user.is_superuser or request.user.role in ('admin', 'warehouse_manager', 'branch_manager') %}
+            <a href="#" class="list-group-item list-group-item-action">
+                Finance
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+                Reports
+            </a>
+        {% endif %}
+
+        {# Admin: Users & Branches management #}
+        {% if request.user.is_superuser or request.user.role == 'admin' %}
+            <a href="/admin/" class="list-group-item list-group-item-action">
+                Django Admin
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+
