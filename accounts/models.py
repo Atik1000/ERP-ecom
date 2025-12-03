@@ -9,6 +9,8 @@ class Branch(models.Model):
     code = models.CharField(max_length=50, unique=True)
     is_warehouse = models.BooleanField(default=False)
     address = models.TextField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
     parent_branch = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -17,6 +19,8 @@ class Branch(models.Model):
         blank=True,
     )
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Branch / Warehouse"
@@ -47,6 +51,17 @@ class User(AbstractUser):
         blank=True,
         related_name="users",
     )
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    profile_image = models.ImageField(
+        upload_to="profiles/", blank=True, null=True
+    )
+    is_active_staff = models.BooleanField(
+        default=True,
+        help_text="Designates whether this user can access the system.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def is_admin(self) -> bool:
         return self.role == self.Role.ADMIN or self.is_superuser
@@ -74,5 +89,42 @@ class BranchUserAssignment(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} @ {self.branch}"
+
+
+class ActivityLog(models.Model):
+    """Track important user actions for audit purposes"""
+    
+    class ActionType(models.TextChoices):
+        LOGIN = "login", "Login"
+        LOGOUT = "logout", "Logout"
+        CREATE = "create", "Create"
+        UPDATE = "update", "Update"
+        DELETE = "delete", "Delete"
+        APPROVE = "approve", "Approve"
+        REJECT = "reject", "Reject"
+        
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name="activity_logs"
+    )
+    action_type = models.CharField(max_length=20, choices=ActionType.choices)
+    model_name = models.CharField(max_length=100, blank=True)
+    object_id = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+        ]
+        
+    def __str__(self) -> str:
+        return f"{self.user} - {self.get_action_type_display()} - {self.created_at}"
 
 

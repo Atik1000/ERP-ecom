@@ -1,0 +1,35 @@
+# Django Core
+Django>=5.0,<5.1
+psycopg2-binary>=2.9.9
+
+# Image Processing
+Pillow>=10.0.0
+
+# Environment Variables
+python-decouple>=3.8
+
+# Admin Enhancement
+django-import-export>=3.3.0
+
+# Development Tools
+django-debug-toolbar>=4.2.0
+
+# Testing
+pytest>=7.4.0
+pytest-django>=4.5.2
+pytest-cov>=4.1.0
+
+# Code Quality
+black>=23.9.0
+flake8>=6.1.0
+isort>=5.12.0
+
+# Production Server
+gunicorn>=21.2.0
+whitenoise>=6.5.0
+
+# Security
+django-cors-headers>=4.2.0
+
+# Utilities
+python-dateutil>=2.8.2
