@@ -9,14 +9,14 @@
         </a>
 
         {# Admin & Managers: Inventory #}
-        {% if request.user.is_superuser or request.user.role in ('admin', 'warehouse_manager', 'branch_manager') %}
+        {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'warehouse_manager' or request.user.role == 'branch_manager' %}
             <a href="{% url 'inventory:dashboard' %}" class="list-group-item list-group-item-action">
                 Inventory
             </a>
         {% endif %}
 
         {# POS: Cashier + Branch Manager + Admin #}
-        {% if request.user.is_superuser or request.user.role in ('admin', 'branch_manager', 'cashier') %}
+        {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'branch_manager' or request.user.role == 'cashier' %}
             <a href="#" class="list-group-item list-group-item-action">
                 POS
             </a>
@@ -30,7 +30,7 @@
         {% endif %}
 
         {# Finance / Reports: Admin & Managers #}
-        {% if request.user.is_superuser or request.user.role in ('admin', 'warehouse_manager', 'branch_manager') %}
+        {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'warehouse_manager' or request.user.role == 'branch_manager' %}
             <a href="#" class="list-group-item list-group-item-action">
                 Finance
             </a>

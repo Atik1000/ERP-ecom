@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Detail | SmartERP{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0">Supplier Detail</h3>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-4">Name</dt>
+          <dd class="col-sm-8">{{ supplier.name }}</dd>
+
+          <dt class="col-sm-4">Email</dt>
+          <dd class="col-sm-8">{{ supplier.email|default:"-" }}</dd>
+
+          <dt class="col-sm-4">Phone</dt>
+          <dd class="col-sm-8">{{ supplier.phone|default:"-" }}</dd>
+
+          <dt class="col-sm-4">Address</dt>
+          <dd class="col-sm-8">{{ supplier.address|linebreaksbr }}</dd>
+
+          <dt class="col-sm-4">Status</dt>
+          <dd class="col-sm-8">
+            {% if supplier.is_active %}
+              <span class="badge badge-success">Active</span>
+            {% else %}
+              <span class="badge badge-secondary">Inactive</span>
+            {% endif %}
+          </dd>
+        </dl>
+        <a href="{% url 'purchase:supplier_update' supplier.pk %}" class="btn btn-sm btn-primary">Edit</a>
+        <a href="{% url 'purchase:supplier_list' %}" class="btn btn-sm btn-secondary">Back</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

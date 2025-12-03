@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Product Detail | SmartERP{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0">Product Detail</h3>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-4">Name</dt>
+          <dd class="col-sm-8">{{ product.name }}</dd>
+
+          <dt class="col-sm-4">SKU</dt>
+          <dd class="col-sm-8">{{ product.sku }}</dd>
+
+          <dt class="col-sm-4">Category</dt>
+          <dd class="col-sm-8">{{ product.category }}</dd>
+
+          <dt class="col-sm-4">Brand</dt>
+          <dd class="col-sm-8">{{ product.brand }}</dd>
+
+          <dt class="col-sm-4">Unit</dt>
+          <dd class="col-sm-8">{{ product.unit }}</dd>
+
+          <dt class="col-sm-4">Barcode</dt>
+          <dd class="col-sm-8">{{ product.barcode|default:"-" }}</dd>
+
+          <dt class="col-sm-4">Has variants</dt>
+          <dd class="col-sm-8">{{ product.has_variants|yesno:"Yes,No" }}</dd>
+
+          <dt class="col-sm-4">Active</dt>
+          <dd class="col-sm-8">{{ product.is_active|yesno:"Yes,No" }}</dd>
+
+          <dt class="col-sm-4">Total Stock</dt>
+          <dd class="col-sm-8">{{ product.total_stock_quantity }}</dd>
+        </dl>
+        <a href="{% url 'inventory:product_update' product.pk %}" class="btn btn-sm btn-primary">Edit</a>
+        <a href="{% url 'inventory:product_list' %}" class="btn btn-sm btn-secondary">Back</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -8,6 +8,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("inventory/", include("inventory.urls", namespace="inventory")),
+    path("purchase/", include("purchase.urls", namespace="purchase")),
     path(
         "",
         TemplateView.as_view(template_name="dashboard.html"),

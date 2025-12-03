@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Supplier | SmartERP{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="mb-0">Delete Supplier</h3>
+      </div>
+      <div class="card-body">
+        <p>Are you sure you want to delete <strong>{{ supplier.name }}</strong>?</p>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete</button>
+          <a href="{% url 'purchase:supplier_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

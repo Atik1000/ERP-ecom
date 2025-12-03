@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Suppliers | SmartERP{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header border-0">
+        <div class="row align-items-center">
+          <div class="col-md-4">
+            <h3 class="mb-0">Suppliers</h3>
+          </div>
+          <div class="col-md-4">
+            <form method="get" class="d-flex justify-content-center">
+              <input type="text"
+                     name="q"
+                     value="{{ query }}"
+                     class="form-control form-control-sm"
+                     placeholder="Search by name, email, phone">
+            </form>
+          </div>
+          <div class="col-md-4 text-right">
+            <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modalCreateSupplier">
+              <i class="ni ni-fat-add"></i> New
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-items-center table-flush">
+          <thead class="thead-light">
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for supplier in page_obj.object_list %}
+            <tr>
+              <td>{{ supplier.name }}</td>
+              <td>{{ supplier.email|default:"-" }}</td>
+              <td>{{ supplier.phone|default:"-" }}</td>
+              <td>
+                {% if supplier.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td class="text-right">
+                <a href="{% url 'purchase:supplier_detail' supplier.pk %}" class="btn btn-sm btn-outline-secondary">
+                  View
+                </a>
+                <a href="{% url 'purchase:supplier_update' supplier.pk %}" class="btn btn-sm btn-outline-info">
+                  Edit
+                </a>
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        data-toggle="modal"
+                        data-target="#modalDeleteSupplier{{ supplier.pk }}">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">
+                No suppliers found.
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer py-4">
+          <nav aria-label="Suppliers pagination">
+            <ul class="pagination justify-content-end mb-0">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">
+                    <i class="fas fa-angle-left"></i>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                </li>
+              {% endif %}
+              <li class="page-item disabled">
+                <span class="page-link">
+                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+              </li>
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">
+                    <i class="fas fa-angle-right"></i>
+                    <span class="sr-only">Next</span>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# Create Modal #}
+<div class="modal fade" id="modalCreateSupplier" tabindex="-1" role="dialog" aria-labelledby="modalCreateSupplierLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCreateSupplierLabel">Create Supplier</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" action="{% url 'purchase:supplier_create' %}">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ create_form.non_field_errors }}
+          <div class="form-group">
+            <label for="id_name">Name</label>
+            {{ create_form.name }}
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="id_email">Email</label>
+              {{ create_form.email }}
+            </div>
+            <div class="form-group col-md-6">
+              <label for="id_phone">Phone</label>
+              {{ create_form.phone }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="id_address">Address</label>
+            {{ create_form.address }}
+          </div>
+          <div class="form-group">
+            <div class="custom-control custom-checkbox">
+              {{ create_form.is_active }}
+              <label class="custom-control-label" for="id_is_active">Active</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link ml-auto" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Delete modals per supplier #}
+{% for supplier in page_obj.object_list %}
+  <div class="modal fade" id="modalDeleteSupplier{{ supplier.pk }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Supplier</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'purchase:supplier_delete' supplier.pk %}">
+          <div class="modal-body">
+            {% csrf_token %}
+            <p>Are you sure you want to delete <strong>{{ supplier.name }}</strong>?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-link ml-auto" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}
+
+

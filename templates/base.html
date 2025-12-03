@@ -2,47 +2,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>{% block title %}SmartERP{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- You can switch to Tailwind later; Bootstrap used as quick base -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
-    {% block extra_head %}{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="SmartERP Admin Dashboard">
+  <title>{% block title %}SmartERP{% endblock %}</title>
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+  <!-- Icons -->
+  <link rel="stylesheet" href="{% static 'vendor/nucleo/css/nucleo.css' %}" type="text/css">
+  <link rel="stylesheet" href="{% static 'vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" type="text/css">
+  <!-- Argon CSS -->
+  <link rel="stylesheet" href="{% static 'css/argon.css' %}" type="text/css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-light">
-<div class="d-flex" id="wrapper">
-    {% if request.user.is_authenticated and request.path|slice:':6' != '/shop/' %}
-        {% include "partials/sidebar.html" %}
-    {% endif %}
-    <div id="page-content-wrapper" class="flex-grow-1">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">SmartERP</a>
-            <div class="ms-auto">
-                {% if request.user.is_authenticated %}
-                    <span class="me-3">
-                        {{ request.user.username }} ({{ request.user.get_role_display }})
-                    </span>
-                    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary btn-sm">Logout</a>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login</a>
-                {% endif %}
-            </div>
-        </nav>
-        <main class="container-fluid mt-3">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} mb-2">
-                    {{ message }}
-                </div>
-            {% endfor %}
-            {% block content %}{% endblock %}
-        </main>
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
+<body>
+  <!-- Sidenav -->
+  {% if request.user.is_authenticated and request.path|slice:':6' != '/shop/' %}
+  <nav class="sidenav navbar navbar-vertical fixed-left navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+    <div class="scrollbar-inner">
+      <!-- Brand -->
+      <div class="sidenav-header align-items-center">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
+          <span class="h4 mb-0">SmartERP</span>
+        </a>
+      </div>
+      <div class="navbar-inner">
+        <div class="collapse navbar-collapse" id="sidenav-collapse-main">
+          <!-- Nav items -->
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                <i class="ni ni-tv-2 text-primary"></i>
+                <span class="nav-link-text">Dashboard</span>
+              </a>
+            </li>
+
+            {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'warehouse_manager' or request.user.role == 'branch_manager' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'inventory:dashboard' %}">
+                <i class="ni ni-box-2 text-info"></i>
+                <span class="nav-link-text">Inventory</span>
+              </a>
+            </li>
+            {% endif %}
+
+            {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'warehouse_manager' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'purchase:supplier_list' %}">
+                <i class="ni ni-cart text-orange"></i>
+                <span class="nav-link-text">Purchase</span>
+              </a>
+            </li>
+            {% endif %}
+
+            {% if request.user.is_superuser or request.user.role == 'admin' or request.user.role == 'branch_manager' or request.user.role == 'cashier' %}
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <i class="ni ni-cart text-success"></i>
+                <span class="nav-link-text">POS</span>
+              </a>
+            </li>
+            {% endif %}
+
+            {% if request.user.is_superuser or request.user.role == 'admin' %}
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <i class="ni ni-bag-17 text-warning"></i>
+                <span class="nav-link-text">E‑Commerce</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <i class="ni ni-credit-card text-danger"></i>
+                <span class="nav-link-text">Finance</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <i class="ni ni-chart-bar-32 text-primary"></i>
+                <span class="nav-link-text">Reports</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/">
+                <i class="ni ni-settings-gear-65 text-dark"></i>
+                <span class="nav-link-text">Django Admin</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- Main content -->
+  <div class="main-content" id="panel">
+    <!-- Topnav -->
+    <nav class="navbar navbar-top navbar-expand navbar-dark bg-primary border-bottom">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav align-items-center ml-md-auto">
+            <li class="nav-item d-xl-none">
+              <div class="pr-3 sidenav-toggler sidenav-toggler-dark" data-action="sidenav-pin" data-target="#sidenav-main">
+                <div class="sidenav-toggler-inner">
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                  <i class="sidenav-toggler-line"></i>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav align-items-center ml-auto ml-md-0">
+            {% if request.user.is_authenticated %}
+            <li class="nav-item d-none d-md-block me-3">
+              <form method="post" action="{% url 'accounts:switch_branch' %}" class="d-flex align-items-center">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <span class="text-white-50 small me-2">Branch:</span>
+                <select name="branch_id" class="form-control form-control-sm" onchange="this.form.submit()">
+                  {% with request.user.branch_links.all as links %}
+                    {% if links %}
+                      {% for link in links %}
+                        <option value="{{ link.branch.id }}"
+                          {% if link.branch.id == request.session.active_branch_id %}selected{% endif %}>
+                          {{ link.branch.name }}
+                        </option>
+                      {% endfor %}
+                    {% elif request.user.default_branch %}
+                      <option value="{{ request.user.default_branch.id }}" selected>
+                        {{ request.user.default_branch.name }}
+                      </option>
+                    {% else %}
+                      <option value="">No branch</option>
+                    {% endif %}
+                  {% endwith %}
+                </select>
+              </form>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <div class="media align-items-center">
+                  <span class="avatar avatar-sm rounded-circle bg-white text-primary d-flex align-items-center justify-content-center">
+                    <i class="ni ni-single-02"></i>
+                  </span>
+                  <div class="media-body ml-2 d-none d-lg-block">
+                    <span class="mb-0 text-sm font-weight-bold">
+                      {{ request.user.username }} ({{ request.user.get_role_display }})
+                    </span>
+                  </div>
+                </div>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a href="{% url 'accounts:profile' %}" class="dropdown-item">
+                  <i class="ni ni-single-02"></i>
+                  <span>My profile</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'accounts:logout' %}" class="dropdown-item">
+                  <i class="ni ni-user-run"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a href="{% url 'accounts:login' %}" class="btn btn-neutral btn-sm">Login</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+      <div class="container-fluid">
+        <div class="header-body">
+          {% block header %}
+          <div class="row align-items-center py-4">
+            <div class="col-lg-6 col-7">
+              <h6 class="h2 text-white d-inline-block mb-0">{% block header_title %}Dashboard{% endblock %}</h6>
+            </div>
+          </div>
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">
+          {{ message }}
+        </div>
+      {% endfor %}
+
+      {% block content %}{% endblock %}
+
+      <footer class="footer pt-4">
+        <div class="row align-items-center justify-content-lg-between">
+          <div class="col-lg-6">
+            <div class="copyright text-center text-lg-left text-muted">
+              &copy; {{ now|date:"Y" }} SmartERP
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Argon JS -->
+  <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/js-cookie/js.cookie.js' %}"></script>
+  <script src="{% static 'vendor/jquery.scrollbar/jquery.scrollbar.min.js' %}"></script>
+  <script src="{% static 'vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js' %}"></script>
+  <script src="{% static 'vendor/chart.js/dist/Chart.min.js' %}"></script>
+  <script src="{% static 'vendor/chart.js/dist/Chart.extension.js' %}"></script>
+  <script src="{% static 'js/argon.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
-
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django.db.models import Sum
 
 from accounts.models import Branch
 
@@ -53,6 +54,19 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def total_stock_quantity(self) -> float:
+        """
+        Helper to get total stock across all branches/warehouses for this product.
+        For now this ignores variants for simplicity; later we can expand.
+        """
+        warehouse_total = (
+            self.warehousestock_set.aggregate(total=Sum("quantity"))["total"] or 0
+        )
+        branch_total = (
+            self.branchstock_set.aggregate(total=Sum("quantity"))["total"] or 0
+        )
+        return float(warehouse_total + branch_total)
 
 
 class ProductVariant(models.Model):
