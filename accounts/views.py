@@ -15,11 +15,25 @@ from .models import Branch
 class BranchAwareLoginView(LoginView):
     """
     Custom LoginView that stores the selected active branch in the session.
+    Role-based redirects:
+    - Customers → E-commerce homepage (/)
+    - Staff (Admin, Managers, Cashiers) → Dashboard (/dashboard)
     """
 
     form_class = LoginForm
     template_name = "accounts/login.html"
     redirect_authenticated_user = True
+
+    def get_success_url(self):
+        """Redirect based on user role"""
+        user = self.request.user
+        
+        # Customer users go to e-commerce homepage
+        if user.role == "customer":
+            return "/"  # E-commerce homepage
+        
+        # All staff members go to dashboard
+        return "/dashboard/"
 
     def form_valid(self, form: LoginForm) -> HttpResponse:
         response = super().form_valid(form)

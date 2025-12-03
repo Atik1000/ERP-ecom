@@ -1,0 +1,201 @@
+{% extends 'base_ecommerce.html' %}
+
+{% block title %}Products - SmartERP{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-th me-2"></i>All Products</h2>
+            <p class="text-muted">Browse our wide selection of quality products</p>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search products..." id="searchInput">
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Sorting -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Category Filter -->
+                    <h6 class="text-muted">Categories</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'ecommerce:product_list' %}" class="text-decoration-none {% if not current_category %}fw-bold{% endif %}">
+                                All Categories
+                            </a>
+                        </li>
+                        {% for category in categories %}
+                        <li class="mb-2">
+                            <a href="{% url 'ecommerce:products_by_category' category.id %}" 
+                               class="text-decoration-none {% if current_category == category.id|stringformat:'s' %}fw-bold{% endif %}">
+                                {{ category.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <hr>
+                    
+                    <!-- Price Range -->
+                    <h6 class="text-muted">Price Range</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Min Price</label>
+                        <input type="number" class="form-control" placeholder="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Price</label>
+                        <input type="number" class="form-control" placeholder="100000">
+                    </div>
+                    <button class="btn btn-primary w-100">Apply</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <!-- Sorting -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="text-muted">Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} products</span>
+                </div>
+                <div>
+                    <select class="form-select" style="width: auto;">
+                        <option>Sort by: Featured</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Name: A to Z</option>
+                        <option>Newest First</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="row g-4">
+                {% for product in page_obj %}
+                <div class="col-md-4">
+                    <div class="card product-card h-100">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text text-muted small">
+                                {{ product.description|truncatewords:15|default:"No description" }}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-primary mb-0">৳{{ product.selling_price }}</h4>
+                                {% if product.cost_price and product.cost_price < product.selling_price %}
+                                <small class="text-muted text-decoration-line-through">৳{{ product.cost_price }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- SKU & Brand -->
+                            <div class="small text-muted mb-2">
+                                <span><i class="fas fa-barcode me-1"></i>{{ product.sku }}</span>
+                                {% if product.brand %}
+                                <span class="ms-2"><i class="fas fa-tag me-1"></i>{{ product.brand.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'ecommerce:product_detail' product.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                {% if user.is_authenticated %}
+                                <div class="btn-group" role="group">
+                                    <form method="post" action="{% url 'ecommerce:add_to_cart' product.id %}" class="flex-grow-1">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                                            <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'ecommerce:add_to_wishlist' product.id %}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-heart"></i>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Login to Buy
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    <h4>No Products Found</h4>
+                    <p class="text-muted">Try adjusting your filters or search query</p>
+                    <a href="{% url 'ecommerce:product_list' %}" class="btn btn-primary">
+                        View All Products
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live search
+    document.getElementById('searchInput')?.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            window.location.href = '{% url "ecommerce:product_search" %}?q=' + this.value;
+        }
+    });
+</script>
+{% endblock %}

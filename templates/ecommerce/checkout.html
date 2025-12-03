@@ -1,0 +1,217 @@
+{% extends 'base_ecommerce.html' %}
+
+{% block title %}Checkout - SmartERP{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4"><i class="fas fa-credit-card me-2"></i>Checkout</h2>
+    
+    <div class="row">
+        <!-- Checkout Form -->
+        <div class="col-md-8">
+            <form method="post" action="{% url 'ecommerce:checkout' %}">
+                {% csrf_token %}
+                
+                <!-- Shipping Address -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Shipping Address</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if addresses %}
+                        <div class="mb-3">
+                            <label class="form-label">Select Saved Address</label>
+                            <select name="address_id" class="form-select" required>
+                                <option value="">Choose an address</option>
+                                {% for address in addresses %}
+                                <option value="{{ address.id }}" {% if address.is_default %}selected{% endif %}>
+                                    {{ address.full_name }} - {{ address.address_line1 }}, {{ address.city }}, {{ address.postal_code }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#newAddress">
+                                <i class="fas fa-plus me-1"></i>Add New Address
+                            </button>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- New Address Form (Collapsed) -->
+                        <div class="collapse {% if not addresses %}show{% endif %}" id="newAddress">
+                            <hr>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name *</label>
+                                    <input type="text" name="full_name" class="form-control" value="{{ user.get_full_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" name="phone" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address Line 1 *</label>
+                                    <input type="text" name="address_line1" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address Line 2</label>
+                                    <input type="text" name="address_line2" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City *</label>
+                                    <input type="text" name="city" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">State/Division *</label>
+                                    <input type="text" name="state" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Postal Code *</label>
+                                    <input type="text" name="postal_code" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_default" id="defaultAddress">
+                                        <label class="form-check-label" for="defaultAddress">
+                                            Set as default address
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Payment Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cash_on_delivery" checked>
+                            <label class="form-check-label" for="cod">
+                                <strong>Cash on Delivery</strong>
+                                <small class="d-block text-muted">Pay when you receive your order</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="bkash" value="bkash">
+                            <label class="form-check-label" for="bkash">
+                                <strong>bKash</strong>
+                                <small class="d-block text-muted">Mobile payment</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                            <label class="form-check-label" for="card">
+                                <strong>Credit/Debit Card</strong>
+                                <small class="d-block text-muted">Visa, Mastercard accepted</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Notes -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Order Notes (Optional)</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Any special instructions for delivery..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Place Order Button -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check-circle me-2"></i>Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Cart Items -->
+                    <h6 class="mb-3">Items ({{ cart_items|length }})</h6>
+                    {% for item in cart_items %}
+                    <div class="d-flex mb-2">
+                        <div class="flex-shrink-0 me-2">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" 
+                                 style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <small class="d-block">{{ item.product.name }}</small>
+                            <small class="text-muted">{{ item.quantity }} x ৳{{ item.product.selling_price }}</small>
+                        </div>
+                        <div>
+                            <strong>৳{{ item.subtotal }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr>
+                    
+                    <!-- Pricing Breakdown -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <strong>৳{{ cart.total }}</strong>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax (0%)</span>
+                        <span>৳0</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Total</h5>
+                        <h5 class="text-primary">৳{{ cart.total }}</h5>
+                    </div>
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Your payment is secure
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Info -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-truck me-2"></i>Shipping Information</h6>
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Free shipping on orders over ৳500</li>
+                        <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Delivery within 3-5 business days</li>
+                        <li class="mb-1"><i class="fas fa-check text-success me-1"></i>Easy returns within 7 days</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

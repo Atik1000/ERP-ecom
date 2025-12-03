@@ -1,0 +1,202 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Admin Dashboard - SmartERP{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- KPI Cards -->
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Total Products</div>
+                    <div class="kpi-value text-primary">{{ total_products|default:0 }}</div>
+                    <small class="text-muted">Active inventory</small>
+                </div>
+                <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-box"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Total Orders</div>
+                    <div class="kpi-value text-success">{{ total_orders|default:0 }}</div>
+                    <small class="text-muted">All time</small>
+                </div>
+                <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="kpi-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">POS Sales</div>
+                    <div class="kpi-value text-info">{{ total_sales|default:0 }}</div>
+                    <small class="text-muted">Total transactions</small>
+                </div>
+                <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="kpi-card position-relative">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-label">Stock Alerts</div>
+                    <div class="kpi-value text-danger">{{ low_stock_alerts|default:0 }}</div>
+                    <small class="text-muted">Requires attention</small>
+                </div>
+                <div class="kpi-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+            {% if low_stock_alerts > 0 %}
+            <span class="badge-notification">{{ low_stock_alerts }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-box d-block mb-2 fs-4"></i>
+                            Products
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'purchase:supplier_list' %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-truck d-block mb-2 fs-4"></i>
+                            Suppliers
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/" class="btn btn-outline-info w-100">
+                            <i class="fas fa-cog d-block mb-2 fs-4"></i>
+                            Admin Panel
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'dashboard:sales_report' %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-chart-line d-block mb-2 fs-4"></i>
+                            Reports
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'crm:coupons_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-tag d-block mb-2 fs-4"></i>
+                            Coupons
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'finance:expenses_list' %}" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-money-bill-wave d-block mb-2 fs-4"></i>
+                            Expenses
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Pending Tasks</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% if pending_purchases > 0 %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><i class="fas fa-shopping-cart text-warning me-2"></i>Purchase Orders</span>
+                        <span class="badge bg-warning">{{ pending_purchases }}</span>
+                    </li>
+                    {% endif %}
+                    {% if low_stock_alerts > 0 %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><i class="fas fa-exclamation-triangle text-danger me-2"></i>Stock Alerts</span>
+                        <span class="badge bg-danger">{{ low_stock_alerts }}</span>
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><i class="fas fa-undo text-info me-2"></i>Pending Returns</span>
+                        <span class="badge bg-info">0</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span><i class="fas fa-comment text-secondary me-2"></i>Customer Feedback</span>
+                        <span class="badge bg-secondary">0</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Sales Chart
+    const ctx = document.getElementById('salesChart');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Sales',
+                data: [12, 19, 3, 5, 2, 3, 10, 15, 8, 12, 18, 20],
+                borderColor: 'rgb(37, 99, 235)',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
